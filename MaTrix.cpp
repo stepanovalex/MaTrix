@@ -28,6 +28,7 @@ byte shadow[8][8] = { // Массив из 64 байт
 };
 
 boolean longStringFlag = false;
+boolean flagBreak = false;
 
 /* Адресные пины демультиплексора:
 Демультиплексор  Ардуино
@@ -42,7 +43,7 @@ byte addrmask = B00000111; // маска адреса по которой буд
 unsigned char *pFont;
 
 /*
-//Пин SS (любой, у меня 7) подключен к ST_CP входу 74HC595
+//Пин SS (7) подключен к ST_CP входу 74HC595
 //Пин SCK (13) подключен к SH_CP входу 74HC595
 //Пин MOSI (11) подключен к DS входу 74HC595
 */
@@ -85,7 +86,16 @@ void MaTrix::init(){
 }
 
 void MaTrix::brightness(byte brightLevel) {
-	analogWrite(BRIGHT, brightLevel);
+	matrixBrightness=brightLevel;
+	analogWrite(BRIGHT, matrixBrightness);
+}
+
+int MaTrix::getBrightness() {
+	return matrixBrightness;	
+}
+
+void MaTrix::abort() {
+	flagBreak=true;
 }
 
 // печатаем символ sym в позиции pos (от 0 до 5, нумерация справа-налево)
@@ -205,7 +215,8 @@ void MaTrix::printArray() {
     Serial.println();
   }
 }
-// печатем массив
+
+// печатем теневой массив
 void MaTrix::printShadow() {
 	Serial.println("Shadow");
   for(byte color=RED; color<YELLOW; color++){
@@ -282,6 +293,8 @@ byte getByte(byte row, byte col){
 void MaTrix::setFont(unsigned char *Font){
   pFont = Font;
 }
+
+
 
 
 // печатаем строку
@@ -387,8 +400,33 @@ void MaTrix::printString(String s, byte pos, byte color, unsigned char *Font, ch
 	//printArray();
 	//printShadow();
 	}
+	else if (effect==4) {	// Fade out - fade in 
+		byte curBr=getBrightness();
+		byte step=curBr/10;
+		for (i=-10; i<10; i++){
+			// 10 шагов на гашение и 10 на зажигание
+			// если яркость - 0, заполняем массив
+			if(i==0){
+				for(j=0; j<8; j++){
+					for(k=0; k<8; k++) {
+						array[j][k]=shadow[j][k];
+					}
+				}
+			}
+			ready=millis()+speed;
+			while(millis()<ready) code();
+			if(i<0){
+				curBr=curBr-step;
+			}
+			else {
+				curBr=curBr+step;
+			}
+			brightness(curBr);
+		  }
+	}
   }
 }
+
 
 void MaTrix::printRunningString(String s, byte color, unsigned char *Font, int speed) {
 	pFont = Font;
@@ -402,6 +440,12 @@ void MaTrix::printRunningString(String s, byte color, unsigned char *Font, int s
 	for(i=0; i<=iterations; i=i++) {
 		sp=s.substring(i*nChar, nChar+i*nChar);
 		printString(sp, nChar-1, color, Font, 3, speed);
+		if(flagBreak) {
+			flagBreak = false;
+			clearLed();
+			clearShadow();
+			return;
+		}
 	}
 	longStringFlag = false;
 	// чтобы не оставались "хвосты"

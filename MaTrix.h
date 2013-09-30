@@ -1,5 +1,5 @@
-#ifndef __TIMEDUINO_H
-#define __TIMEDUINO_H
+#ifndef __MATRIX_H
+#define __MATRIX_H
 
 #define RED    0
 #define GREEN  1
@@ -11,6 +11,7 @@
 #define FAST   50
 #define VFAST  25
 
+#define FADE   4
 #define LEFT   3
 #define UP	   1
 #define DOWN   2
@@ -39,8 +40,10 @@ class MaTrix
 		void printStringShadow(String s, byte pos, byte color);
 		void printStrShadow(unsigned char *s, byte pos, byte color);
 		void brightness(byte brightLevel);
+		void abort();
+		int getBrightness();
 	protected:
-		
+		int matrixBrightness;
 		
 };
 
