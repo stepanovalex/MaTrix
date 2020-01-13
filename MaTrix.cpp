@@ -433,11 +433,10 @@ void MaTrix::printRunningString(String s, byte color, unsigned char *Font, int s
 	longStringFlag = true;
 	//clearLed();
 	clearShadow();
-	int i = 0;
 	int nChar=int(32/pgm_read_byte(pFont));
 	String sp;
 	int iterations = int((s.length())/nChar);
-	for(i=0; i<=iterations; i=i++) {
+	for(int i=0; i<=iterations; ++i) {
 		sp=s.substring(i*nChar, nChar+i*nChar);
 		printString(sp, nChar-1, color, Font, 3, speed);
 		if(flagBreak) {
