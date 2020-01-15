@@ -1,8 +1,8 @@
 #ifndef __MATRIX_H
 #define __MATRIX_H
 
-#define RED    0
-#define GREEN  1
+#define GREEN  0
+#define RED    1
 #define YELLOW 2
 
 #define VSLOW  500
